@@ -1,0 +1,96 @@
+---
+title: "update_needfactor"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{update_needfactor}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(budgetr)
+library(tidyverse)
+```
+
+Sosiaali- ja terveystoiminnan kulujen referenssitaso perustuu Terveyden ja hyvinvoinnin laitoksen määrittämiin *tarvekertoimiin*. Tuoreimmat tarvekertoimet (julkaistu 30.6.2020) ovat vuodelta 2018. Kun uusia lukuja julkaistaan, on ennusteessa käytettävät kertoimet ja niiden avulla johdettu malli syytä päivittää.
+
+Nykyiset tarvekertoimet on noudettu THL:n sivuilta:
+
+- [THL, Tarvevakioidut menot](https://thl.fi/fi/web/sote-uudistus/talous-ja-politiikka/kustannukset-ja-vaikuttavuus/rahoitus/tarvevakioidut-menot)
+- [Sote-rahoituksen tarvevakiointi](http://urn.fi/URN:ISBN:978-952-343-483-7)
+
+Kertoimet löytyvät paketin sisältä tiedostosta `./inst/exdata/needfactors.xlsx`. Asennetun paketin sisältä ne voi lukea komennolla:
+
+```{r, eval=FALSE}
+# needfactor <- list()
+getwd()
+# needfactor$factors <- readxl::read_excel(system.file("extdata", "needfactors.xlsx", package = "budgetr"), sheet = "data")
+# needfactor$factors <- readxl::read_excel("../inst/extdata/needfactors.xlsx", sheet = "data")
+# needfactor$factors_source <- readxl::read_excel(system.file("extdata", "needfactors.xlsx", package = "budgetr"), sheet = "source")
+# needfactor$factors_source <- readxl::read_excel("../inst/extdata/needfactors.xlsx", sheet = "source")
+```
+
+Kuntien nimien ja numeroiden mäppäämisessä auttaa tiedosto `./inst/exdata/finland_regions.xlsx`. 
+
+```{r, eval=FALSE}
+# regions <- readxl::read_excel(system.file("extdata", "finland_regions.xlsx", package = "budgetr"), sheet = "data")
+# regions <- readxl::read_excel("../inst/extdata/finland_regions.xlsx", sheet = "data")
+```
+
+Kun tarvekertoimet on päivitetty, tallennetaan ne paketin sisäisiksi dataseteiksi ja päivitetään datasettien kuvaukset.
+```{r, eval=FALSE}
+usethis::use_data(needfactors, regions)
+```
+
+Datasettien kuvaukset ovat R-tiedostoissa *datasetin_nimi*.R.
+
+Kuntien tarvekerrointen ajallinen kehitys selitetään kunnan asukkaiden ikärakenteessa tapahtuvien muutosten perusteella. Tätä varten luodaan lineaarinen malli, jossa kuntien väliset erot tarvekertoimissa pyritään selittämään eroilla kunnan asukkaiden ikäjakaumassa. Ennusteessa se osa tarvekertoimesta, jota ikäjakaumaan perustuva malli ei selitä, pidetään ajallisesti vakiona.
+
+Mallin tehdään hakemalla väestön ikäjakauma kunnittain samalta vuodelta, jolta tarvekertoimet ovat ja luokittelemalla se ikäryhmiin. Ikäryhmäjakona käytetään terveydenhuollon tarvekertoimien määrittelyssä käytettyjä ikäryhmiä.
+
+```{r, eval=FALSE}
+pop_data <- get_population_data(year = 2018)$avg %>%
+  group_population_data() %>%
+  inner_join(needfactors, by = "muni") %>%
+  mutate(needfactor = needfactor_2018)
+```
+
+Sovitetaan aineistoon lineaarinen malli ja tallennetaan tarvittavat tiedot sopivaan muotoon.
+
+```{r, eval=FALSE}
+needfactor$lm <- step(fit <- lm(formula = needfactor ~ age1 + age2 + age3 + age4 + age5 + age6 + age7 + age8 + age9 + age10, data = pop_data), trace = 0)
+needfactor$residuals <- tibble(muni = pop_data$muni, residual = needfactor_lm$residuals)
+needfactor$coefficients <- tibble(name = if_else(names(needfactor$lm$coefficients) == "(Intercept)", "const", names(needfactor$lm$coefficients)), value = needfactor$lm$coefficients)
+```
+
+Lasketaan sosiaali- ja terveydenhuollon palveluiden *referenssinettokäyttökustannus* per henkilö vuonna 2018.
+
+
+```{r, eval=FALSE}
+standardized_sh_cost <- get_cost_data() %>% 
+  filter(func == "Sosiaali- ja terveystoiminta yhteensä") %>%
+  inner_join(get_population_data(year = 2018)$avg %>% group_by(muni) %>% summarise(population = sum(population)), by = "muni") %>%
+  inner_join(needfactor$factors, by = "muni") %>%
+  summarise(standardized_cost = sum(amount)/sum(needfactor_2018 * population)) %>%
+  pull()
+use_data(standardized_sh_cost)
+```
+
+```{r}
+indicies <- list()
+indicies$mspi <- readxl::read_excel("../inst/extdata/indicies.xlsx", sheet = "mspi")
+indicies$cpi <- readxl::read_excel("../inst/extdata/indicies.xlsx", sheet = "cpi")
+indicies$corp_tax <- readxl::read_excel("../inst/extdata/indicies.xlsx", sheet = "corp_tax")
+indicies$prop_tax <- readxl::read_excel("../inst/extdata/indicies.xlsx", sheet = "prop_tax")
+indicies$gov_trans <- readxl::read_excel("../inst/extdata/indicies.xlsx", sheet = "gov_trans")
+indicies$earnings <- readxl::read_excel("../inst/extdata/indicies.xlsx", sheet = "earnings")
+usethis::use_data(indicies, overwrite = TRUE)
+```
+

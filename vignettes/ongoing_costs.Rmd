@@ -1,0 +1,29 @@
+---
+title: "Nettokäyttökustannukset toiminnoittain"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ongoing_costs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(budgetr)
+library(tidyverse)
+```
+
+# Sosiaali- ja terveystoiminta
+
+Lasketaan Järvenpään Sosiaali- ja terveystoiminnan referenssikäyttökustannukset vuosille 2018--2030.
+
+```{r, eval=FALSE}
+
+```
+

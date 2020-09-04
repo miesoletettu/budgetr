@@ -1,0 +1,135 @@
+---
+title: "Järvenpään vihreä taloussuunnitelma"
+author: "Järvenpään vihreät"
+date: "The Date"
+output: output_format
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(budgetr)
+library(tidyverse)
+```
+
+## Vihreä kaupunkivisiomme
+
+Lorem ipsum...
+
+## Strategiamme
+
+Lorem ipsum..
+
+# Taloussuunnitelmamme
+
+## Referenssitaso
+
+##### Kysymys:
+
+- Paljonko on tarpeeksi?
+- Mikä on jo liikaa?
+- Entä oikea jako oikeassa suhteessa?
+
+##### Vastaus:
+
+Ei ole olemassa mitään absoluuttisesti oikeaa määrää eikä suhdetta. Kaikki on relatevistista kuin suhteellisuusteoriassa.
+
+##### Kysymys:
+
+Eikä meillä sitten ole mitään tasoa, joihin asioita voisi verrata?
+
+##### Vastaus:
+
+Voimme verrata asioita suhteessa edellisiin vuosiin ja/tai suhteessa muihin.
+
+Tavoitteiden asettaminen on mielekkäintä tehdä suhteessä muihin.
+
+##### Kysymys:
+
+- Mikä on vertailuryhmämme? Kaikki Suomen kunnat vai jokin osajoukko? Vaiko koko maailma?
+- Miten vertailuarvo määritellään? Keskiarvo? Mediaani? Joku muu kvantiili?
+- Mitä verrataan? Toimintakuluja? Toimintakatetta? Käyttökustanuksia? Nettokäyttökustannuksia?
+
+##### Vastaus:
+
+Todennököisesti ainoa (kohtuullisen) luotettavasti toimiva vertailukohta ovat *tarvevakioidut* *nettokäyttökustannukset* per asukas.
+
+##### Kysymys:
+
+Mitä tarkoittaa *nettokäyttökustannukset*?
+
+##### Vastaus:
+
+Nettokäyttökustannukset kuvaavat kunnan juoksevan toiminnan aiheuttamien menojen ja tulojen välistä erotusta. 
+Niihin ei sisällytetä investointimenoja ja -tuloja (huom. poistot laskettu mukaan), valtionosuuksia, verotuloja sekä rahoituskuluja ja -tuottoja. 
+Nettokäyttökustannuksiin ei sisällytetä kuntien liikelaitosten tietoja, lukuun ottamatta kunnan ja sen liikelaitoksen välisiä eriä, jotka sisältyvät toimintamenoihin ja -tuloihin. 
+Kuntien sisäiset erät sekä ostot kuntayhtymiltä, yksityisiltä sekä muilta on sisällytetty lukuihin.
+
+Nettokäyttökustannukset ovat se osa kunnan kustannuksista, joka jää rahoitettavaksi verorahoituksella (valtionosuudet ja verotulot) sekä mahdollisesti lainanotolla. 
+Nettokäyttökustannukset kuvaavat yhteistoimintatapauksissa oman kunnan osuutta kustannuksista, riippumatta siitä onko kyseessä isäntä- vai sopimuskunta.
+
+##### Mitä tarkoittaa *tarvevakiointi*?
+
+Tarvevakiointi tehdään kertomalla nettokäyttökustannukset per asukas *tarvekertoimella*. Tarvekerroin määritellään siten, että ne kuvaavat tarkasteltavan toiminnon tarvetta kunnassa suhteessa maan keskiarvoon.
+
+Esimerkiksi, jos Suomen väestöstä 1 % olisi esiopetusikäisiä ja Järvenpäässä esiopetusikäisiä olisi 1,3 % väestöstä, Järvenpään esiopetuksen tarvekerroin olisi 1,3. Järvenpääläisten tarve esiopetukselle olisi siis 30 % maan keskiarvoa korkeampi ja verrattaessa Järvenpään esiopetuksen nettokäyttökustannuksia per asukas maan keskiarvoon, pitää Järvenpään esiopetuksen nettokäyttöksutannukset per asukas jakaa tarvekertoimella 1,3.
+
+Esiopetuksen kohdalla samaan lopputulokseen päätyvä tarkastelu voidaan tehdä myös tarkastelemalla nettokäyttökustannuksia per esiopetusikäinen. (Tällöin tarvekerrointa ei tarvita.)
+
+Sen sijaan palveluissa, joiden tarve vaihtelee käyttäjäryhmittäin tarvevakiointi on välttämätöntä lukujen vertailtavuudelle. Tällaisia palveluita ovat erityisesti sosiaali- ja terveyspalvelut.
+
+Perusopetuksen osalta vertailu voidaan tehdä vertailemalla nettokäyttökustannuksia per oppilas. Tarkempaan vertailuun päästään kuitenkin huomiolla eri ikäisten oppilaiden erilainen palvelutarve. (Oppilaan ikä ei tietenkään ole perusopetuksessa ainoa palvelutarpeen peruste, vaan esimerkiksi erityisen tuen oppilaiden määrä vaikuttaa myös palvelutarpeeseen.)
+
+## Sosiaali- ja terveyspalvelut
+
+```{r}
+cost_data <- get_cost_data()
+sh_cost <- cost_data %>%
+  filter(muni == 186 & func == function_list$func[40]) %>%
+  select(amount) %>%
+  pull()
+pop_data_hist <- get_population_data(muni_code = "KU186", year = 2018:2019)
+pop_data_2019 <- get_population_data(muni_code = "KU186", year = 2019)
+
+sum(pop_data_2019$end$population)
+sum(pop_data_2019$avg$population)
+
+pop_data_2018_end <- get_population_data(muni_code = "KU186", year = 2018)$end
+pop_data_2019_end <- get_population_data(muni_code = "KU186", year = 2019)$end
+sum(pop_data_2019$population) - sum(pop_data_2018$population)
+pop_data_2019_fc <- forecast_population(netchangecount = 301, year = 2018)$end %>% filter(year == 2019)
+pop_data_2018_fc <- forecast_population(netchangecount = 301, year = 2017)$end %>% filter(year == 2018)
+pop_data_2019_fc_end <- pop_data_2019_fc$end %>% filter(year == 2019)
+
+sum(pop_data_2019$population)
+sum(pop_data_2018_fc$population)
+
+pop_count <- sum(pop_data$population)
+
+
+sh_needfactor <- needfactor$factors %>% 
+  filter(muni == 186) %>% 
+  select(needfactor_2018) %>%
+  pull()
+
+```
+
+Järvenpään sote-palveluiden nettokäyttökustannukset vuonna 2018 olivat `r format_num(sote_cost/10^6, digits = 1)` milj. €.
+
+Järvenpään sote-palveluiden nettokäyttökustannukset per asukas vuonna 2018 olivat `r format_num(sote_cost/pop_count, digits = 2)` €, kun ne tarvevakioidusti olisivat  `r format_num(sh_needfactor * standardized_sh_cost, digits = 2)` €.
+
+Järvenpään sote-palveluiden tarvevakioidut nettokäyttökustannukset per asukas vuonna 2018 olivat `r format_num(sote_cost/pop_count/sh_needfactor, digits = 2)` €, kun maan keskiarvo oli `r format_num(standardized_sh_cost, digits = 2)`.
+
+Järvenpään sote-palveluiden käyttökustannukset olivat siis `r format_num(sote_cost/pop_count/sh_needfactor/standardized_sh_cost, digits = 3)`-kertaiset maan keskiarvoon verrattuna. Euroissa tämä tarkoittaa, että Järvenpään sote-palvelut maksoivat vuonna 2018 `r format_num((sote_cost/pop_count/sh_needfactor/standardized_sh_cost - 1)*sote_cost/10^6, digits = 3)` € maan keskiarvoa enemmän.
+
+Miten sote-palveluiden nettoköyttökustannukset sitten kehittyvät Järvenpäässä?
+
+
+```{r}
+muni_code = "KU186"
+pop_data <- get_population_data(muni_code, year = 2018)$avg %>%
+  dplyr::union(get_population_data(muni_code, year = 2019)$avg) %>%
+  dplyr::union(forecast_population(muni_code)$avg)
+
+```
+
+## Osallistuva budjetointi
