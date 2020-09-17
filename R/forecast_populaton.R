@@ -1,19 +1,63 @@
-#' Forecast population
+#' Väestökehityksne ennustaminen
 #'
-#' @param muni_code A character vector
-#' @param netchangerate A numeric vector. An absolute net change rate in population by years. If a forecasting period is longer than netchangerate, the last value of vector will be repeted.
-#' @param netchangecount A numeric vector. An absolute net change in population by years. If a forecasting period is longer than netchange, the last value of vector will be repeted. If both netchangerate and netchangecount is dilivered, netchangecount is used.
-#' @param year A numeric value. A base year. Forecasting starts at the of this year.
-#' @return A list on two tibble. The First is the end of the year population and the second is the average of the start and the end of year by municipality, year, age and sex.
+#' Ennustetaan kunnan väestön ja väestörakenteen kehitystä. Hedelmällisyys ja kuolevuus perustuvat Tilastokeskuksen väestöennusteeseen.
+#' Poismuutto perustuu Tilastokeskuksen muuttoliiketilastoon. Väestömäärän kokonaismuutos (netto) annetaan parametrina ja kunnan sisäänmuutto kalibroidaan siten, että ennuste vastaa annettia nettoväestömuutosta.
+#' Sisäänmuuttajien ikä- ja sukupuolijakauma perustuu Tilastokeskuksen muuttoliiketilastoon.
+#'
+#' @param municipality numero, merkkijono tai vektori. esim. \code{186}, \code{"186"}, \code{"KU186"}, \code{"Järvenpää"}, \code{c("KU186", "KU020")} tai \code{"*"} (kaikki)
+#' @param netchangerate numeerinen vektori. prosenttuaalinen vuotuinen nettomuutos. Jos vektori on lyhyempi kuin ennustejakso, niin vektorin viimeistä arvoa toistetaan.
+#' @param netchangecount numeerinen vektori. absoluuttinen vuotuinen nettomuutos. Jos vektori on lyhyempi kuin ennustejakso, niin vektorin viimeistä arvoa toistetaan. Jos tämä on annettu, niin silloin \code{netchangerate} ohitetaan.
+#' @param year numero tai merkkijono. Perusvuosi, jonka lopun väestön kehitystä ennustetaan eteenpäin.
+#' @param fert_adj  numeerinen vektori. hedelmällisyyden mukautuskerroin ennustevuosille. Jos vektori on lyhyempi kuin ennustejakso, niin vektorin viimeistä arvoa toistetaan.
+#' @param mort_adj  numeerinen vektori. kuolevuuden mukautuskerroin ennustevuosille. Jos vektori on lyhyempi kuin ennustejakso, niin vektorin viimeistä arvoa toistetaan.
+#' @return lista:
+#'   \itemize{
+#'     \item \code{data} lista:
+#'       \itemize{
+#'         \item \code{start} tibble: Vuoden alun väestö
+#'           \itemize{
+#'             \item \code{muni}: kunnan numeerinen koodi
+#'             \item \code{year}: vuosi
+#'             \item \code{age}: age: ikä täysinä vuosina
+#'             \item \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+#'             \item \code{population}: väestö vuoden alussa
+#'           }
+#'         \item \code{end} tibble: Vuoden lopun väestö
+#'           \itemize{
+#'             \item \code{muni}: kunnan numeerinen koodi
+#'             \item \code{year}: vuosi
+#'             \item \code{age}: age: ikä täysinä vuosina
+#'             \item \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+#'             \item \code{population}: väestö vuoden lopussa
+#'           }
+#'         \item \code{avg} tibble: Vuoden keskimääräinen väestö
+#'           \itemize{
+#'             \item \code{muni}: kunnan numeerinen koodi
+#'             \item \code{year}: vuosi
+#'             \item \code{age}: age: ikä täysinä vuosina
+#'             \item \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+#'             \item \code{population}: väestön määrä keskimäärin vuoden aikana
+#'           }
+#'      }
+#'    \item \code{ref} merkkijono: Viitetieto tietolähteeseen
+#'  }
 #' @examples
-#' popul_data <- get_mortality_data(muni_code = "KU186",  netchangerate = c(0.015, 0.015, 0.02, 0.02, 0.015), year = 2019)) # return populations by year, age and sex in Jarvenpaa
+#' popul_data <- forecast_population(muni_code = "KU186",  netchangerate = c(0.015, 0.015, 0.02, 0.02, 0.015), year = 2019)) #
+#'
+#' @export
 
-forecast_population <- function(muni_code = "KU186", netchangerate = 0.015, netchangecount = NA, year = 2019, adj = 1.061497) {
+forecast_population <- function(municipality = "KU186", netchangerate = 0.015, netchangecount = NA, year = 2019, adj = indicies$adj) {
 
-  fert_data <- get_fertility_data(muni_code)
-  mort_data <- get_mortality_data(muni_code)
-  mig_data <- get_migration_data(muni_code, year)
-  pop_data <- get_population_data(muni_code, year)$end
+  # Viitetieto
+  ref <- paste0("Lähde: Tilastokeskus, ", Sys.Date(), ", muokattu")
+
+  muni_code <- convert_municipality(municipality, to = "muni_code")
+  year <- as.numeric(year)
+
+  fert_data <- get_fertility_data(muni_code)$data
+  mort_data <- get_mortality_data(muni_code)$data
+  mig_data <- get_migration_data(muni_code, (year-3):year)$data
+  pop_data <- get_population_data(muni_code, year)$data$end
 
   population_start <- pop_data
   for (counter in 1:11) {
@@ -26,22 +70,26 @@ forecast_population <- function(muni_code = "KU186", netchangerate = 0.015, netc
 
     # syntyneet, eli uusi -1-ikäisten korortti
     births <- population_start %>% dplyr::filter(sex == 2 & age >=14 & age <= 50) %>%
-      dplyr::left_join(fert_data, by = c("muni", "sex", "age")) %>%
-      dplyr::summarise(births = round(sum(population * fertility * adj))) %>%
+      dplyr::left_join(fert_data, by = c("muni", "sex", "age"), suffix = c("", "_fert")) %>%
+      dplyr::left_join(adj, by = "year") %>%
+      dplyr::summarise(births = round(sum(population * fertility * fert))) %>%
       dplyr::transmute(age = -1, `1` = round(0.5 * births), `2` = births - `1`) %>%
       tidyr::pivot_longer(-age, names_to = "sex", values_to = "population") %>%
-      dplyr::mutate(muni = as.numeric(stringr::str_sub(muni_code, 3, 5)),
+      dplyr::transmute(muni = as.numeric(stringr::str_sub(muni_code, 3, 5)),
                     year = !!year + counter,
-                    sex = as.numeric(sex))
+                    age,
+                    sex = as.numeric(sex),
+                    population)
 
-    # tyhdistetään vuoden alun populaatioon syntyneet ja generoidaan kuolleet ja poismuuttaneet
+    # yhdistetään vuoden alun populaatioon syntyneet ja generoidaan kuolleet ja poismuuttaneet
     population_start <- population_start %>%
       dplyr::mutate(year = year + 1) %>%
       dplyr::union(births) %>%
       dplyr::left_join(mort_data, by = c("muni", "year", "sex", "age")) %>%
-      dplyr::mutate(deaths = -population * mortality) %>%
+      dplyr::left_join(adj, by = "year") %>%
+      dplyr::mutate(deaths = -population * mortality * mort) %>%
       dplyr::mutate(age5 = pmin(floor(age / 5) * 5, 75)) %>%
-      dplyr::left_join(mig_data %>% dplyr::select(muni, age5, sex, population5 = population, outmigrationpropensity, inmigrationintensity), by = c("muni", "age5", "sex")) %>%
+      dplyr::left_join(mig_data %>% dplyr::transmute(muni, age5 = age, sex, population5 = population, outmigrationpropensity, inmigrationintensity), by = c("muni", "age5", "sex")) %>%
       dplyr::mutate(outmigration = dplyr::if_else(is.na(outmigrationpropensity * population), 0, -outmigrationpropensity * population),
                     population5 = dplyr::if_else(is.na(population5), 0, population5),
                     outmigrationpropensity = dplyr::if_else(is.na(outmigrationpropensity), 0, outmigrationpropensity),
@@ -59,13 +107,18 @@ forecast_population <- function(muni_code = "KU186", netchangerate = 0.015, netc
     pop_data <- pop_data %>%
       dplyr::union(population_start)
   }
+  pop_data_start <- pop_data %>%
+    dplyr::filter(year < 2030) %>%
+    dplyr::mutate(year = year + 1)
 
-  pop_data_avg <- pop_data %>%
-    dplyr::filter(year < !!year + 11) %>%
-    dplyr::mutate(year = year + 1) %>%
-    dplyr::union(pop_data %>% dplyr::filter(year > !!year)) %>%
+  pop_data_end <- pop_data %>%
+    dplyr::filter(year > !!year)
+
+  pop_data_avg <- pop_data_start %>%
+    dplyr::union(pop_data_end) %>%
     dplyr::group_by(muni, year, sex, age) %>%
     dplyr::summarise(population = mean(population)) %>%
     dplyr::ungroup()
-  return(list(end = pop_data, avg = pop_data_avg))
+
+  pupulation_forecasted <- list(data = list(start = pop_data_start, end = pop_data_end, avg = pop_data_avg), ref = ref)
 }

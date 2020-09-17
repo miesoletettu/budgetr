@@ -2,19 +2,20 @@
 % Please edit documentation in R/get_cost_data.R
 \name{get_cost_data}
 \alias{get_cost_data}
-\title{Get net ongoing costs}
+\title{Nettokäyttökustannukset toiminnoittain}
 \usage{
-get_cost_data(year = 2018)
+get_cost_data(year = "*", lazy = TRUE)
 }
 \arguments{
-\item{year}{A numeric value}
+\item{year}{numero tai vektori. Käyvät arvot ovat 2015 - 2018}
 }
 \value{
 A tibble
 }
 \description{
-Get net ongoing costs by municipality and function
+Nettokäyttökustannukset toiminnoittain
 }
 \examples{
-cost_data <- get_cost_data() # return ongoing costs in 2018 by municipality and function
+cost_data <- get_cost_data() # Nettokäyttökustannukset
+
 }

@@ -6,6 +6,7 @@
 #' @return Atabble. The municipality corporete taxes by municipality and year.
 #' @examples
 #' corporate_tax <- estimate_corporate_tax(corp_tax_2019 = 4677000)
+#' @export
 
 estimate_corporate_tax <- function(corporate_tax_2019 = 4677000, corporate_tax_index = indicies$corp_tax){
 

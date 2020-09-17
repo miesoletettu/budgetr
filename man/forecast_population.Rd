@@ -2,31 +2,68 @@
 % Please edit documentation in R/forecast_populaton.R
 \name{forecast_population}
 \alias{forecast_population}
-\title{Forecast population}
+\title{Väestökehityksne ennustaminen}
 \usage{
 forecast_population(
-  muni_code = "KU186",
+  municipality = "KU186",
   netchangerate = 0.015,
   netchangecount = NA,
   year = 2019,
-  adj = 1.061497
+  adj = indicies$adj
 )
 }
 \arguments{
-\item{muni_code}{A character vector}
+\item{municipality}{numero, merkkijono tai vektori. esim. \code{186}, \code{"186"}, \code{"KU186"}, \code{"Järvenpää"}, \code{c("KU186", "KU020")} tai \code{"*"} (kaikki)}
 
-\item{netchangerate}{A numeric vector. An absolute net change rate in population by years. If a forecasting period is longer than netchangerate, the last value of vector will be repeted.}
+\item{netchangerate}{numeerinen vektori. prosenttuaalinen vuotuinen nettomuutos. Jos vektori on lyhyempi kuin ennustejakso, niin vektorin viimeistä arvoa toistetaan.}
 
-\item{netchangecount}{A numeric vector. An absolute net change in population by years. If a forecasting period is longer than netchange, the last value of vector will be repeted. If both netchangerate and netchangecount is dilivered, netchangecount is used.}
+\item{netchangecount}{numeerinen vektori. absoluuttinen vuotuinen nettomuutos. Jos vektori on lyhyempi kuin ennustejakso, niin vektorin viimeistä arvoa toistetaan. Jos tämä on annettu, niin silloin \code{netchangerate} ohitetaan.}
 
-\item{year}{A numeric value. A base year. Forecasting starts at the of this year.}
+\item{year}{numero tai merkkijono. Perusvuosi, jonka lopun väestön kehitystä ennustetaan eteenpäin.}
+
+\item{fert_adj}{numeerinen vektori. hedelmällisyyden mukautuskerroin ennustevuosille. Jos vektori on lyhyempi kuin ennustejakso, niin vektorin viimeistä arvoa toistetaan.}
+
+\item{mort_adj}{numeerinen vektori. kuolevuuden mukautuskerroin ennustevuosille. Jos vektori on lyhyempi kuin ennustejakso, niin vektorin viimeistä arvoa toistetaan.}
 }
 \value{
-A list on two tibble. The First is the end of the year population and the second is the average of the start and the end of year by municipality, year, age and sex.
+lista:
+  \itemize{
+    \item \code{data} lista:
+      \itemize{
+        \item \code{start} tibble: Vuoden alun väestö
+          \itemize{
+            \item \code{muni}: kunnan numeerinen koodi
+            \item \code{year}: vuosi
+            \item \code{age}: age: ikä täysinä vuosina
+            \item \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+            \item \code{population}: väestö vuoden alussa
+          }
+        \item \code{end} tibble: Vuoden lopun väestö
+          \itemize{
+            \item \code{muni}: kunnan numeerinen koodi
+            \item \code{year}: vuosi
+            \item \code{age}: age: ikä täysinä vuosina
+            \item \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+            \item \code{population}: väestö vuoden lopussa
+          }
+        \item \code{avg} tibble: Vuoden keskimääräinen väestö
+          \itemize{
+            \item \code{muni}: kunnan numeerinen koodi
+            \item \code{year}: vuosi
+            \item \code{age}: age: ikä täysinä vuosina
+            \item \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+            \item \code{population}: väestön määrä keskimäärin vuoden aikana
+          }
+     }
+   \item \code{ref} merkkijono: Viitetieto tietolähteeseen
+ }
 }
 \description{
-Forecast population
+Ennustetaan kunnan väestön ja väestörakenteen kehitystä. Hedelmällisyys ja kuolevuus perustuvat Tilastokeskuksen väestöennusteeseen.
+Poismuutto perustuu Tilastokeskuksen muuttoliiketilastoon. Väestömäärän kokonaismuutos (netto) annetaan parametrina ja kunnan sisäänmuutto kalibroidaan siten, että ennuste vastaa annettia nettoväestömuutosta.
+Sisäänmuuttajien ikä- ja sukupuolijakauma perustuu Tilastokeskuksen muuttoliiketilastoon.
 }
 \examples{
-popul_data <- get_mortality_data(muni_code = "KU186",  netchangerate = c(0.015, 0.015, 0.02, 0.02, 0.015), year = 2019)) # return populations by year, age and sex in Jarvenpaa
+popul_data <- forecast_population(muni_code = "KU186",  netchangerate = c(0.015, 0.015, 0.02, 0.02, 0.015), year = 2019)) #
+
 }

@@ -7,6 +7,7 @@
 #' @return Atabble. The municipality income taxes by municipality and year.
 #' @examples
 #' income_tax <- estimate_income_tax()
+#' @export
 
 estimate_income_tax <- function(pop_data, tax_rate = 0.1975, earnings_index = indicies$earnings){
 

@@ -6,6 +6,7 @@
 #' @return A tabble. central government transfers to municipality by year
 #' @examples
 #' goverment_trans <- estimate_goverment_transer()
+#' @export
 
 estimate_goverment_trasfer <- function(pop_data, gov_tranfers = indicies$gov_trans){
 

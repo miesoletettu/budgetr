@@ -2,20 +2,38 @@
 % Please edit documentation in R/get_fertility_data.R
 \name{get_fertility_data}
 \alias{get_fertility_data}
-\title{Get fertility data from  the the Statistic Finnish population forecast}
+\title{Hedelmällisyystietojen haku Tilastokeskuksen StatFin-tietokannasta}
 \usage{
-get_fertility_data(muni_code = "*")
+get_fertility_data(municipality = "*")
 }
 \arguments{
-\item{muni_code}{A character vector}
+\item{municipality}{numero, merkkijono tai vektori. esim. \code{186}, \code{"186"}, \code{"KU186"}, \code{"Järvenpää"}, \code{c("KU186", "KU020")} tai \code{"*"} (kaikki)}
 }
 \value{
-The fertility rates by municipality and age.
+lista tibblejä. 1.
+
+lista:
+  \itemize{
+    \item \code{data} tibble: hedelmällisyyskertoimet kunnittain naisen iän mukaan
+    \item \code{ref} merkkijono: Viitetieto tietolähteeseen
+ }
+ tibbleissä:
+
+ \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+
+ \code{age}: age: ikä täysinä vuosina ( 14 - 50)
 }
 \description{
-Get fertility data from  the the Statistic Finnish population forecast
+Funktio hakee Tilastokeskuksen StatFin-tietokannasta Väestöennuste 2019: Hedelmällisyyskertoimet äidin iän mukaan kunnittain, 2019-2040.
+Hedelmällisyysluvut ovat koko ennustejaksolle samat.
+}
+\details{
+Tilastokeskuksen StatFin-tietokannan tiedot on julkaistu lisenssillä CC BY 4.0 (Katso: \url{https://www.stat.fi/org/lainsaadanto/copyright.html})
+
+Tietojen haku tapahtuu \code{pxweb} R-paketilla \url{http://github.com/ropengov/pxweb}
 }
 \examples{
-fert_data <- get_fertility_data()        # return fertility rates by municipalities and mother ages
-fert_data <- get_fertility_data("KU186") # return fertility rates by mother ages in Jarvenpaa
+fert_data <- get_fertility_data()        # hedelmällisyyskertoimet iän mukaan kunnittain
+fert_data <- get_fertility_data("KU186") # Järvenpään hedelmällisyyskertoimet
+
 }

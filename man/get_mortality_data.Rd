@@ -2,20 +2,40 @@
 % Please edit documentation in R/get_mortality_data.R
 \name{get_mortality_data}
 \alias{get_mortality_data}
-\title{Get mortality data from  the the Statistic Finnish population forecast}
+\title{Kuolevuustietojen haku Tilastokeskuksen StatFin-tietokannasta}
 \usage{
-get_mortality_data(muni_code = "*")
+get_mortality_data(municipality = "*")
 }
 \arguments{
-\item{muni_code}{A character vector}
+\item{municipality}{numero, merkkijono tai vektori. esim. \code{186}, \code{"186"}, \code{"KU186"}, \code{"Järvenpää"}, \code{c("KU186", "KU020")} tai \code{"*"} (kaikki)}
 }
 \value{
-The mortality rates by municipality, year, age and sex.
+lista tibblejä. 1.
+
+lista:
+  \itemize{
+    \item \code{data} tibble: kuolleisuuskertoimet kunnittain vuoden, iän ja sukupuolen mukaan
+    \itemize{
+      \item \code{muni}: kunnan numeerinen koodi
+      \item \code{year}: vuosi
+      \item \code{age}: age: ikä täysinä vuosina
+      \item \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+      \item \code{mortality}: kuolevuus
+    }
+    \item \code{ref} merkkijono: Viitetieto tietolähteeseen
+ }
 }
 \description{
-Get mortality data from  the the Statistic Finnish population forecast
+Funktio hakee Tilastokeskuksen StatFin-tietokannasta Väestöennuste 2019: Kuolleisuuskertoimet iän ja sukupuolen mukaan kunnittain, 2019-2040.
+Kuolleisuuskertoimet muuttuvat vuosittain. Tilastokeskuksen ennusteessa on kuolevuudet 99 vuoden ikään saakka. Tämä funktio palautta viimeisenä ikäryhmänä 100-vuotiaat, joille kuolevuus on 1.
+}
+\details{
+Tilastokeskuksen StatFin-tietokannan tiedot on julkaistu lisenssillä CC BY 4.0 (Katso: \url{https://www.stat.fi/org/lainsaadanto/copyright.html})
+
+Tietojen haku tapahtuu \code{pxweb} R-paketilla \url{http://github.com/ropengov/pxweb}
 }
 \examples{
-fert_data <- get_mortality_data()        # return mortality rates by municipalities, year, age and sex
-fert_data <- get_mortality_data("KU186") # return mortality rates by year, age and sex in Jarvenpaa
+mort_data <- get_mortality_data()        # Kaikkien kuntien kuolevuusennuste vuosille 2019 - 2040 iän ja sukuolen mukaan
+mort_data <- get_mortality_data("KU186") # Järvenpään kuolevuusennuste vuosille 2019 - 2040 iän ja sukuolen mukaan
+
 }

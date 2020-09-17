@@ -2,22 +2,46 @@
 % Please edit documentation in R/get_migration_data.R
 \name{get_migration_data}
 \alias{get_migration_data}
-\title{Get migration data from  the the Statistic Finnish}
+\title{Muuttoliiketietojen haku Tilastokeskuksen StatFin-tietokannasta}
 \usage{
-get_migration_data(muni_code, year)
+get_migration_data(municipality = "*", year = "*")
 }
 \arguments{
-\item{muni_code}{A character vector like "KU186".}
+\item{municipality}{numero, merkkijono tai vektori. esim. \code{186}, \code{"186"}, \code{"KU186"}, \code{"Järvenpää"}, \code{c("KU186", "KU020")} tai \code{"*"} (kaikki)}
 
-\item{year}{A character vector. Rates have calculates as average between year - 3 and year.}
+\item{year}{numero, merkkijono tai numeerinen tai merkkijono vektori. Esim. \code{2019}, \code{2017:2019}, \code{c("2010", "2019")} tai \code{"*"} (kaikki))}
 }
 \value{
-In and out migration rates by municipality, age and sex.
+lista:
+  \itemize{
+    \item \code{data} tibble:
+      \itemize{
+        \item \code{muni}: kunnan numeerinen koodi
+        \item \code{year}: vuosi
+        \item \code{age}: age: ikä täysinä vuosina
+        \item \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+        \item \code{outmigrationpropensity}
+        \item \code{inmigrationpropensity}
+        \item \code{inmigrationintensity}
+        \item \code{netmigrationpropensity}
+     }
+   \item \code{ref} merkkijono: Viitetieto tietolähteeseen
+ }
 }
 \description{
-Get migration data from  the the Statistic Finnish
+Funktio hakee Tilastokeskuksen StatFin-tietokannasta kuntien välinen muutto iän (5-v.), sukupuolen ja muuton suunnan mukaan alueittain, 1990-2019 ja
+muokkaa tästä asukkaan iästä ja sukupuolesta riippuvan poismuuttoalttiuden, sekä sisäänmuuttajalle iän ja sukupuolen todennäköisyysjakauman.
+Vuotta 2004 vanhempia tietoja ei haeta.
+Poismuuttoalttiuden laskennassa käytetään kunnan väestöjakaumaan (katso: \code{\link{get_population_data}})
+Funktio laskee anttejun vuosien keskiarvon.
+}
+\details{
+Tilastokeskuksen StatFin-tietokannan tiedot on julkaistu lisenssillä CC BY 4.0 (Katso: \url{https://www.stat.fi/org/lainsaadanto/copyright.html})
+
+Tietojen haku tapahtuu \code{pxweb} R-paketilla \url{http://github.com/ropengov/pxweb}
 }
 \examples{
-migr_data <- get_migration_data()        # return in and out migrations rates by municipalities, age, sex
-migr_data <- get_migration_data("KU186") # return in and out migrations rates by age and sex in Jarvenpaa
+migr_data <- get_migration_data()        # muuttointensiteetit kaikille kunnille iän ja sukupuolen mukaan
+migr_data <- get_migration_data("KU186") #
+
 }

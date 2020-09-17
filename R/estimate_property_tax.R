@@ -6,6 +6,7 @@
 #' @return A tabble. The municipality corporete taxes by municipality and year.
 #' @examples
 #' property_tax <- estimate_property_tax(corp_tax_2019 = 4677000)
+#' @export
 
 estimate_property_tax <- function(property_tax_2019 = 14596000, property_tax_index = indicies$prop_tax){
 

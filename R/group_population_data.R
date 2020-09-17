@@ -3,6 +3,7 @@
 #' @param pop_data A tibble, population by municipality, year, age and sex (like get_population_data retunrs).
 #' @examples
 #' grouped_popul_data <- group_population_data(popul_data)
+#' @export
 group_population_data <- function(pop_data) {
   group_pop_data <- pop_data %>%
     group_by(muni, year) %>%

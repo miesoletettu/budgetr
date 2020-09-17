@@ -91,6 +91,7 @@ indicies$corp_tax <- readxl::read_excel("../inst/extdata/indicies.xlsx", sheet =
 indicies$prop_tax <- readxl::read_excel("../inst/extdata/indicies.xlsx", sheet = "prop_tax")
 indicies$gov_trans <- readxl::read_excel("../inst/extdata/indicies.xlsx", sheet = "gov_trans")
 indicies$earnings <- readxl::read_excel("../inst/extdata/indicies.xlsx", sheet = "earnings")
+indicies$adj <- readxl::read_excel("../inst/extdata/indicies.xlsx", sheet = "adj")
 usethis::use_data(indicies, overwrite = TRUE)
 ```
 

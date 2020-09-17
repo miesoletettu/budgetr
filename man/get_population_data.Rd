@@ -2,22 +2,73 @@
 % Please edit documentation in R/get_population_data.R
 \name{get_population_data}
 \alias{get_population_data}
-\title{Get population data from  the the Statistic Finnish}
+\title{Väestötietojen haku Tilastokeskuksen StatFin-tietokannasta}
 \usage{
-get_population_data(muni_code = "*", year = 2019)
+get_population_data(
+  municipality = "*",
+  year = "*",
+  group_sex = FALSE,
+  group_age = FALSE,
+  current = TRUE,
+  lazy = TRUE
+)
 }
 \arguments{
-\item{muni_code}{A character vector}
+\item{municipality}{numero, merkkijono tai vektori. esim. \code{186}, \code{"186"}, \code{"KU186"}, \code{"Järvenpää"}, \code{c("KU186", "KU020")} tai \code{"*"} (kaikki)}
 
-\item{year}{A character vector. A year or years.}
+\item{year}{numero, merkkijono tai numeerinen tai merkkijono vektori. Esim. \code{2019}, \code{2017:2019}, \code{c("2010", "2019")} tai \code{"*"} (kaikki))}
+
+\item{group_sex}{looginen muuttuja \code{default = FALSE}. Ilmoittaa summataanko molemmat sukupuolet yhteen.}
+
+\item{group_age}{looginen muuttuja tai numeerinen vektori  \code{default = FALSE} = ei ryhmittelyä,  \code{TRUE} = kaikki yhteensä, numeerinen vektori ryhmien alarajoista.}
+
+\item{current}{looginen muuttuja \code{default = TRUE} = käytetään nykyistä kuntajakoa, \code{FALSE} = käytetään ko. vuoden aluejakoa.}
 }
 \value{
-A list on two tibble. The First is the end of the year population and the second is the average of the start and the end of year by municipality, year, age and sex.
+lista:
+  \itemize{
+    \item \code{data} lista:
+      \itemize{
+        \item \code{start} tibble: Vuoden alun väestö
+          \itemize{
+            \item \code{muni}: kunnan numeerinen koodi
+            \item \code{year}: vuosi
+            \item \code{age}: age: ikä täysinä vuosina
+            \item \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+            \item \code{population}: väestö vuoden alussa
+          }
+        \item \code{end} tibble: Vuoden lopun väestö
+          \itemize{
+            \item \code{muni}: kunnan numeerinen koodi
+            \item \code{year}: vuosi
+            \item \code{age}: age: ikä täysinä vuosina
+            \item \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+            \item \code{population}: väestö vuoden lopussa
+          }
+        \item \code{avg} tibble: Vuoden keskimääräinen väestö
+          \itemize{
+            \item \code{muni}: kunnan numeerinen koodi
+            \item \code{year}: vuosi
+            \item \code{age}: age: ikä täysinä vuosina
+            \item \code{sex}: 1 = mies, 2 = nainen, 0 = sukupuolet yhteensä
+            \item \code{population}: väestön määrä keskimäärin vuoden aikana
+          }
+     }
+   \item \code{ref} merkkijono: Viitetieto tietolähteeseen
+ }
 }
 \description{
-Get population data from  the the Statistic Finnish
+Funktio hakee Tilastokeskuksen StatFin-tietokannasta joko Väestö iän (1-v.) ja sukupuolen mukaan alueittain tai
+väestö iän (1-v.) ja sukupuolen mukaan alueittain kunkin tilastovuoden aluejaolla.
+Väestötiedot ovat tietokannassa vuodesta 2003 lähtien. Kunkin vuoden väestötieto on hetkeltä year-12-31.
+}
+\details{
+Tilastokeskuksen StatFin-tietokannan tiedot on julkaistu lisenssillä CC BY 4.0 (Katso: \url{https://www.stat.fi/org/lainsaadanto/copyright.html})
+
+Tietojen haku tapahtuu \code{pxweb} R-paketilla \url{http://github.com/ropengov/pxweb}
 }
 \examples{
-popul_data <- get_population_data()                             # return population in 2019 by municipalities, age and sex
-popul_data <- get_mortality_data("KU186", year = c(2018, 2019)) # return populations by year, age and sex in Jarvenpaa
+pop_data <- get_population_data()                              # kaikkien kuntien tiedot keskiasukasmäärät kaikilta vuosilta
+pop_data <- get_population_data("KU186", year = c(2018, 2019)) # Järvenpään väestö vuosilta 2018 ja 2019
+
 }

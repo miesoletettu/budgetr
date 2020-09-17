@@ -8,9 +8,10 @@
 #' @examples
 #' fert_data <- get_mortality_data()        # return mortality rates by municipalities, year, age and sex
 #' fert_data <- get_mortality_data("KU186") # return mortality rates by year, age and sex in Jarvenpaa
+#'
+#' @export
 
-
-estimate_sh_costs <- function(pop_data, mspi = indicies$mspi, needfactor = needfactor, standardized_sh_cost = standardized_sh_cost, adj = c()){
+estimate_sh_costs <- function(pop_data, mspi = indicies$mspi, needfactor = needfactor, standardized_sh_cost = standardized_sh_cost, adj = indicies$adj){
 
   year <- 2018:max(pop_data$year)
   mspi_base <- mspi %>% filter(year == 2018) %>% select(index) %>% pull()

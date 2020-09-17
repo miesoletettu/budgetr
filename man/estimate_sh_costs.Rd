@@ -9,7 +9,7 @@ estimate_sh_costs(
   mspi = indicies$mspi,
   needfactor = needfactor,
   standardized_sh_cost = standardized_sh_cost,
-  adj = c()
+  adj = indicies$adj
 )
 }
 \arguments{
@@ -28,4 +28,5 @@ Estimate standardized social and health service ongoing costs per person by muni
 \examples{
 fert_data <- get_mortality_data()        # return mortality rates by municipalities, year, age and sex
 fert_data <- get_mortality_data("KU186") # return mortality rates by year, age and sex in Jarvenpaa
+
 }
